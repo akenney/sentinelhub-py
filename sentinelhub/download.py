@@ -74,7 +74,8 @@ class DownloadRequest:
     GLOBAL_AWS_CLIENT = None
 
     def __init__(self, *, url=None, data_folder=None, filename=None, headers=None, request_type=RequestType.GET,
-                 post_values=None, save_response=True, return_data=True, data_type=MimeType.RAW, **properties):
+                 post_values=None, save_response=True, return_data=True, decode_data=True,
+                 data_type=MimeType.RAW, **properties):
 
         self.url = url
         self.data_folder = data_folder
@@ -83,6 +84,7 @@ class DownloadRequest:
         self.post_values = post_values
         self.save_response = save_response
         self.return_data = return_data
+        self.decode_data = decode_data
 
         self.properties = properties
 
@@ -145,10 +147,18 @@ class DownloadRequest:
     def set_return_data(self, return_data):
         """ Set return_data attribute
 
-        :param return_data: flag to return or not data downloaded by this request to disk. Default is `True`.
+        :param return_data: flag to return or not data downloaded by this request. Default is `True`.
         :return: bool
         """
         self.return_data = return_data
+
+    def set_decode_data(self, decode_data):
+        """ Set decode_data attribute
+
+        :param decode_data: flag to decode data downloaded by this request. Default is `True`.
+        :type decode_data: bool
+        """
+        self.decode_data = decode_data
 
     def is_downloaded(self):
         """ Checks if data for this request has already been downloaded and is saved to disk.
@@ -259,7 +269,9 @@ def execute_download_request(request):
     _save_if_needed(request, response_content)
 
     if request.return_data:
-        return decode_data(response_content, request.data_type, entire_response=response)
+        if request.decode_data:
+            return decode_data(response_content, request.data_type, entire_response=response)
+        return response_content
     return None
 
 
